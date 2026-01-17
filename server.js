@@ -1,4 +1,4 @@
-// server.js - FINAL STABLE VERSION
+// server.js - ULTIMATE BIGLOOT EDITION
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -7,7 +7,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// --- DATABASE IN MEMORY ---
+// --- DATABASE (In Memory) ---
 let users = []; 
 
 const mkItem = (id, name, val, rare, chance, emoji) => ({ id, name, price: val, rarity: rare, chance, img: emoji });
@@ -37,6 +37,8 @@ const ALL_BOXES = [
 ];
 
 // --- ENDPOINTS ---
+
+// Register & Login
 app.post('/api/register', (req, res) => {
     const { username, password } = req.body;
     if(users.find(u => u.username === username)) return res.json({ success: false, message: "User exists!" });
@@ -56,12 +58,14 @@ app.get('/api/me', (req, res) => {
     user ? res.json(user) : res.status(401).json({ error: "Not logged in" });
 });
 
+// Deposit
 app.post('/api/deposit', (req, res) => {
     const user = users.find(u => u.username === req.headers['x-username']);
     if(user) { user.balance += parseFloat(req.body.amount); res.json({ success: true, newBalance: user.balance }); }
     else res.status(401).json({ error: "User not found" });
 });
 
+// Game Logic
 app.get('/api/boxes', (req, res) => res.json(ALL_BOXES.map(b => ({ id: b.id, name: b.name, price: b.price, img: b.img }))));
 
 app.get('/api/box/:id', (req, res) => {
@@ -79,8 +83,29 @@ app.post('/api/open-box/:id', (req, res) => {
     let rnd = Math.random() * 100, sum = 0, winner = box.items[0];
     for (let i of box.items) { sum += i.chance; if (rnd <= sum) { winner = i; break; } }
     
-    user.inventory.push(winner);
+    // Προσθέτουμε ένα unique ID για να ξεχωρίζουμε τα items
+    const wonItem = { ...winner, uniqueId: Date.now() + Math.random() };
+    user.inventory.push(wonItem);
+    
     res.json({ success: true, winner, newBalance: user.balance });
 });
 
-app.listen(3000, () => console.log("SERVER RUNNING ON 3000"));
+// SELL ITEM ENDPOINT (NEW)
+app.post('/api/sell', (req, res) => {
+    const user = users.find(u => u.username === req.headers['x-username']);
+    if (!user) return res.status(401).json({ error: "Login first" });
+    
+    const { uniqueId, price } = req.body;
+    
+    // Find and remove item
+    const itemIndex = user.inventory.findIndex(i => i.uniqueId === uniqueId);
+    if (itemIndex > -1) {
+        user.inventory.splice(itemIndex, 1); // Delete from inventory
+        user.balance += parseFloat(price); // Add money
+        res.json({ success: true, newBalance: user.balance, inventory: user.inventory });
+    } else {
+        res.status(404).json({ error: "Item not found" });
+    }
+});
+
+app.listen(3000, () => console.log("ULTIMATE SERVER READY ON 3000"));
