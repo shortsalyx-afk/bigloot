@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BIGLOOT - Official</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,900;1,900&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #0b0b0f; --card: #16161f; --green: #ccff00; --purple: #8a2be2; --gold: #ffaa00; }
+        body { margin: 0; background: var(--bg); color: white; font-family: 'Montserrat', sans-serif; overflow-x: hidden; }
+        
+        /* NAVBAR */
+        .navbar { 
+            padding: 20px 40px; background: rgba(11,11,15,0.95); border-bottom: 1px solid #222; 
+            display: flex; justify-content: space-between; align-items: center; position: sticky; top:0; z-index:100; 
+            backdrop-filter: blur(10px); 
+        }
+        .logo { font-size: 28px; font-weight: 900; font-style: italic; cursor: pointer; }
+        .logo span { color: var(--green); text-shadow: 0 0 15px var(--green); }
+        
+        /* NAVBAR ACTIONS */
+        .nav-actions { display: flex; gap: 15px; align-items: center; }
+        
+        .btn-login { 
+            background: transparent; color: white; border: 2px solid #333; padding: 10px 25px; 
+            font-weight: 900; cursor: pointer; border-radius: 5px; transition: 0.3s; 
+        }
+        .btn-login:hover { border-color: var(--green); color: var(--green); }
+
+        .btn-green { 
+            background: var(--green); color: black; padding: 10px 25px; border: none; 
+            font-weight: 900; cursor: pointer; border-radius: 5px; transition: 0.3s; 
+        }
+        .btn-green:hover { transform: scale(1.05); box-shadow: 0 0 15px var(--green); }
+
+        .bal-display { font-size: 18px; color: var(--green); border: 1px solid #333; padding: 8px 15px; border-radius: 6px; font-weight: 900; margin-right: 10px; }
+
+        /* MODALS (POP UPS) */
+        .modal-overlay {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
+            display: flex; align-items: center; justify-content: center; z-index: 2000;
+        }
+        .modal-box { 
+            background: var(--card); padding: 40px; border-radius: 20px; text-align: center; 
+            border: 1px solid #333; width: 320px; box-shadow: 0 0 50px rgba(138,43,226,0.15); position: relative;
+        }
+        .close-btn { position: absolute; top: 15px; right: 20px; cursor: pointer; color: #666; font-size: 20px; font-weight: bold; }
+        .close-btn:hover { color: white; }
+
+        input { width: 100%; padding: 15px; margin: 10px 0; background: #000; border: 1px solid #333; color: white; border-radius: 5px; box-sizing: border-box; font-family: inherit; font-weight: bold;}
+        input:focus { border-color: var(--green); outline: none; }
+
+        /* BOX GRID */
+        .container { max-width: 1300px; margin: 0 auto; padding: 50px 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px; }
+        .box-card { background: var(--card); border-radius: 15px; border: 1px solid #222; text-align: center; padding: 20px 0; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden; }
+        .box-card:hover { transform: translateY(-10px); border-color: var(--purple); box-shadow: 0 10px 30px rgba(138,43,226,0.2); }
+        .box-icon { font-size: 80px; margin-bottom: 10px; transition: 0.3s; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5)); }
+        .box-card:hover .box-icon { transform: scale(1.1) rotate(-5deg); }
+        .box-name { font-weight: 900; font-size: 20px; text-transform: uppercase; font-style: italic; }
+        .box-price { background: var(--green); color: black; font-weight: 900; padding: 5px 12px; font-size: 14px; display: inline-block; transform: skew(-10deg); margin-top: 5px; }
+
+        /* GAME ROOM */
+        #game-view { display: none; text-align: center; padding-top: 20px; padding-bottom: 100px; }
+        .spinner-container { 
+            width: 100%; max-width: 900px; height: 220px; margin: 30px auto; background: #000; 
+            border-top: 4px solid var(--green); border-bottom: 4px solid var(--green); position: relative; overflow: hidden; 
+        }
+        .line { position: absolute; left: 50%; width: 4px; height: 100%; background: white; z-index: 10; transform: translateX(-50%); box-shadow: 0 0 15px white;}
+        .strip { display: flex; height: 100%; align-items: center; position: absolute; }
+        .item-card { width: 170px; height: 180px; background: #1a1a22; margin: 0 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-bottom: 4px solid #333; flex-shrink: 0; }
+        .item-emoji { font-size: 70px; margin-bottom: 10px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6)); }
+        
+        .btn-spin { 
+            background: var(--green); padding: 20px 70px; font-size: 26px; font-weight: 900; font-style: italic; border: none; cursor: pointer; margin-top: 20px; 
+            clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%); transition: 0.2s;
+        }
+        .btn-spin:hover { transform: scale(1.05); box-shadow: 0 0 30px var(--green); }
+        .btn-spin:disabled { background: #333; cursor: not-allowed; box-shadow: none; }
+
+        /* CONTENTS PREVIEW */
+        .contents-area { max-width: 1000px; margin: 60px auto 0; text-align: center; }
+        .preview-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
+        .mini-card { 
+            width: 110px; background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 8px; padding: 15px 5px; 
+            transition: 0.3s; position: relative;
+        }
+        .mini-card:hover { background: rgba(255,255,255,0.08); transform: translateY(-5px); }
+        .mini-emoji { font-size: 40px; margin-bottom: 10px; display: block; }
+        .mini-name { font-size: 11px; font-weight: 700; color: #ccc; }
+        
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="logo" onclick="toLobby()">BIG<span>LOOT</span></div>
+        <div class="nav-actions" id="nav-container">
+            </div>
+    </div>
+
+    <div id="lobby" class="container">
+        <div class="grid" id="grid"></div>
+    </div>
+
+    <div id="game-view">
+        <button onclick="toLobby()" class="btn-login" style="border:1px solid #444;">← BACK</button>
+        <h1 id="b-name" style="text-align:center; font-size:50px; font-style:italic; margin: 20px 0;">BOX</h1>
+        
+        <div class="spinner-container">
+            <div class="line"></div>
+            <div class="strip" id="strip"></div>
+        </div>
+
+        <h2 id="msg" style="text-align:center; height:30px; margin-top:20px; text-shadow:0 0 10px currentColor;"></h2>
+        
+        <div style="text-align:center;">
+            <button class="btn-spin" id="spin-btn" onclick="spin()">OPEN</button>
+        </div>
+
+        <div class="contents-area">
+            <h3 style="color:#666; letter-spacing:2px;">BOX CONTENTS</h3>
+            <div class="preview-grid" id="preview"></div>
+        </div>
+    </div>
+
+    <div id="auth-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div class="close-btn" onclick="toggleModal('auth-modal')">X</div>
+            <h2 id="auth-title" style="font-style:italic; margin-top:0;">LOGIN</h2>
+            
+            <input type="text" id="u-in" placeholder="Username">
+            <input type="password" id="p-in" placeholder="Password">
+            
+            <button class="btn-green" style="width:100%; margin-top:10px;" onclick="handleAuth()">GO</button>
+            
+            <p onclick="toggleAuthMode()" id="auth-switch" style="cursor:pointer; font-size:12px; color:#666; margin-top:15px;">
+                No account? Register
+            </p>
+        </div>
+    </div>
+
+    <div id="deposit-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div class="close-btn" onclick="toggleModal('deposit-modal')">X</div>
+            <h2>DEPOSIT</h2>
+            <div style="display:flex; gap:10px; justify-content:center; margin-bottom:20px;">
+                <button class="btn-login" onclick="deposit(10)">+10€</button>
+                <button class="btn-login" onclick="deposit(50)">+50€</button>
+                <button class="btn-login" onclick="deposit(100)">+100€</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:3000/api';
+        let user = localStorage.getItem('user');
+        let regMode = false;
+        let currentBox = null, items = [];
+
+        // --- NAVIGATION & UI ---
+        function updateNav() {
+            const nav = document.getElementById('nav-container');
+            if (user) {
+                // LOGGED IN VIEW
+                fetch(`${API}/me`, {headers:{'x-username':user}}).then(res => res.json()).then(data => {
+                    nav.innerHTML = `
+                        <div class="bal-display">${data.balance.toFixed(2)}€</div>
+                        <button class="btn-green" onclick="toggleModal('deposit-modal')">+ DEPOSIT</button>
+                        <button class="btn-login" onclick="logout()" style="border:none; color:#666;">LOGOUT</button>
+                    `;
+                });
+            } else {
+                // GUEST VIEW
+                nav.innerHTML = `<button class="btn-login" onclick="openAuth()">LOGIN</button>`;
+            }
+        }
+
+        function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
+        function openAuth() { document.getElementById('auth-modal').classList.remove('hidden'); }
+        
+        function toggleAuthMode() {
+            regMode = !regMode;
+            document.getElementById('auth-title').innerText = regMode ? "REGISTER" : "LOGIN";
+            document.getElementById('auth-switch').innerText = regMode ? "Back to Login" : "No account? Register";
+        }
+
+        // --- AUTH ACTIONS ---
+        async function handleAuth() {
+            const u = document.getElementById('u-in').value;
+            const p = document.getElementById('p-in').value;
+            if(!u || !p) return alert("Fill fields");
+
+            const res = await fetch(API + (regMode ? '/register' : '/login'), {
+                method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username:u, password:p})
+            });
+            const data = await res.json();
+            
+            if(data.success) {
+                user = data.user.username;
+                localStorage.setItem('user', user);
+                toggleModal('auth-modal'); // Close modal
+                updateNav();
+            } else {
+                alert(data.message || "Error");
+            }
+        }
+
+        function logout() { localStorage.removeItem('user'); user = null; updateNav(); }
+
+        // --- DEPOSIT ---
+        async function deposit(amt) {
+            await fetch(`${API}/deposit`, {method:'POST', headers:{'Content-Type':'application/json', 'x-username':user}, body:JSON.stringify({amount:amt})});
+            toggleModal('deposit-modal');
+            updateNav();
+            alert(`Added ${amt}€!`);
+        }
+
+        // --- BOX LOGIC ---
+        async function loadBoxes() {
+            const res = await fetch(`${API}/boxes`);
+            const boxes = await res.json();
+            document.getElementById('grid').innerHTML = boxes.map(b => `
+                <div class="box-card" onclick="openGame('${b.id}')">
+                    <div class="box-icon">${b.img}</div>
+                    <div class="box-name">${b.name}</div>
+                    <div class="box-price">${b.price}€</div>
+                </div>
+            `).join('');
+        }
+
+        async function openGame(id) {
+            currentBox = id;
+            document.getElementById('lobby').classList.add('hidden');
+            document.getElementById('game-view').style.display = 'block';
+
+            const res = await fetch(`${API}/box/${id}`);
+            const data = await res.json();
+            items = data.items;
+
+            document.getElementById('b-name').innerText = data.name;
+            document.getElementById('spin-btn').innerText = `OPEN ${data.price}€`;
+            document.getElementById('msg').innerText = '';
+
+            // Render Preview Grid
+            document.getElementById('preview').innerHTML = items.map(i => `
+                <div class="mini-card" style="border-bottom: 2px solid ${getColor(i.rarity)}">
+                    <span class="mini-emoji">${i.img}</span>
+                    <div class="mini-name">${i.name}</div>
+                </div>
+            `).join('');
+            
+            renderStrip(null, false);
+        }
+
+        function toLobby() {
+            document.getElementById('game-view').style.display = 'none';
+            document.getElementById('lobby').classList.remove('hidden');
+            if(user) updateNav(); // Refresh balance
+        }
+
+        // --- SPIN LOGIC ---
+        async function spin() {
+            // CHECK LOGIN FIRST
+            if (!user) {
+                openAuth(); // Show popup instead of spinning
+                return;
+            }
+
+            const btn = document.getElementById('spin-btn');
+            btn.disabled = true; 
+            document.getElementById('msg').innerText = "ROLLING...";
+
+            const res = await fetch(`${API}/open-box/${currentBox}`, {method:'POST', headers:{'x-username':user}});
+            const data = await res.json();
+
+            if(!data.success) {
+                if(data.error.includes("Login")) openAuth();
+                else if(data.error.includes("money")) {
+                    alert("Not enough money!");
+                    toggleModal('deposit-modal');
+                } else alert(data.error);
+                
+                btn.disabled = false;
+                return;
+            }
+
+            // Update Balance instantly
+            updateNav();
+
+            const strip = document.getElementById('strip');
+            strip.style.transition = 'none'; strip.style.transform = 'translateX(0)';
+
+            const winIdx = renderStrip(data.winner, true);
+            const offset = (900/2) - (170/2);
+            const finalX = -((winIdx * 180) - offset + (Math.random()*60-30));
+
+            setTimeout(() => {
+                strip.style.transition = 'transform 6s cubic-bezier(0.1,1,0.3,1)';
+                strip.style.transform = `translateX(${finalX}px)`;
+            }, 50);
+
+            setTimeout(() => {
+                document.getElementById('msg').innerText = data.winner.name;
+                document.getElementById('msg').style.color = getColor(data.winner.rarity);
+                btn.disabled = false;
+            }, 6000);
+        }
+
+        function renderStrip(win, active) {
+            const list = [];
+            const len = active ? 80 : 10;
+            const winPos = 60;
+            for(let i=0; i<len; i++) {
+                if(active && i===winPos) list.push(win);
+                else list.push(items[Math.floor(Math.random()*items.length)]);
+            }
+            document.getElementById('strip').innerHTML = list.map(i => `
+                <div class="item-card" style="border-color:${getColor(i.rarity)}">
+                    <div class="item-emoji">${i.img}</div>
+                    <div style="font-size:12px; font-weight:bold; color:#ccc">${i.name}</div>
+                </div>
+            `).join('');
+            return winPos;
+        }
+
+        function getColor(r) { return r==='legendary'?'var(--gold)':(r==='rare'?'var(--purple)':'#555'); }
+
+        // START
+        loadBoxes();
+        updateNav();
+    </script>
+</body>
+</html>
